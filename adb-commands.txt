@@ -1,0 +1,20 @@
+# push to android phone 
+adb push moe.shizuku.privileged.api.apk /data/local/tmp/
+
+# push to pc
+adb pull /data/app/~~AUPbQlMkIvJQwauEq6P4zg==/moe.shizuku.privileged.api-CS3ZfHdaiHpXmCmUaZRUew==/base.apk ~/Downloads/shizuku
+
+# package list
+adb shell pm list packages -3
+
+# apk should be located in the pc Downloads folder when trying to install to phone
+
+# path to where the app is stored on the phone
+adb shell pm path "moe.shizuku.privileged.api"
+
+# install app on the phone
+# rename file so it ends with .apk
+adb install moe.shizuku.privileged.api.apk
+
+# start shizuku
+adb shell /data/app/moe.shizuku.privileged.api-cNUao8RVv9fs0MSDb6IE7g==/lib/arm64/libshizuku.so
