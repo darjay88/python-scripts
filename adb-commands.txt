@@ -18,3 +18,6 @@ adb install moe.shizuku.privileged.api.apk
 
 # start shizuku
 adb shell /data/app/moe.shizuku.privileged.api-cNUao8RVv9fs0MSDb6IE7g==/lib/arm64/libshizuku.so
+
+# run in c++
+./adb_file_transfer /home/jay/Downloads/base.apk R5CY54XQM4R
