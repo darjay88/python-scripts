@@ -6,7 +6,7 @@ from pathlib import Path
 def send_file_via_adb(file_path, device_id):
     try:
         # Constructing adb push command
-        command = ['adb', 'push', str(file_path), f'/data/local/tmp/{file_path.name}']
+        command = ['adb', 'push', str(file_path), f'/storage/self/primary/Arch-Files/{file_path.name}']
         print(f'Sending {file_path} to Android device {device_id}...')
         # Executing the command
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
