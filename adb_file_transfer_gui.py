@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ADB File Transfer GUI - A graphical interface for ADB file/directory transfers to Android devices
-Arch Linux optimized
+Arch Linux optimized - ENHANCED COLORFUL VERSION
 """
 
 import sys
@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QFrame
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, QThread
-from PyQt5.QtGui import QFont, QIcon, QColor
+from PyQt5.QtGui import QFont, QIcon, QColor, QLinearGradient, QPalette
 from PyQt5.QtGui import QTextCursor
 
 
@@ -48,21 +48,21 @@ class TransferWorker(QObject):
     def _send_file(self, file_path):
         """Send a single file via ADB"""
         filename = os.path.basename(file_path)
-        dest_path = f"/storage/self/primary/Arch-Files/{filename}"
+        dest_path = f"/storage/self/primary/Arch-Files/{{filename}}"
         command = ["adb", "push", file_path, dest_path]
         
         if self.device_id != "default":
             command.insert(1, "-s")
             command.insert(2, self.device_id)
         
-        self.output.emit(f"Sending {filename} to device {self.device_id}...\n")
+        self.output.emit(f"Sending {{filename}} to device {{self.device_id}}...\n")
         
         try:
             result = subprocess.run(command, capture_output=True, text=True, check=True)
             self.output.emit(result.stdout)
-            self.output.emit(f"✓ Successfully sent {filename}\n")
+            self.output.emit(f"✓ Successfully sent {{filename}}\n")
         except subprocess.CalledProcessError as e:
-            self.error.emit(f"Error sending {filename}: {e.stderr}")
+            self.error.emit(f"Error sending {{filename}}: {{e.stderr}}")
     
     def _send_directory(self, dir_path):
         """Send all files in a directory recursively via ADB"""
@@ -73,7 +73,7 @@ class TransferWorker(QObject):
                 self._send_file(file_path)
                 file_count += 1
         
-        self.output.emit(f"\n✓ Transfer complete! {file_count} files sent.\n")
+        self.output.emit(f"\n✓ Transfer complete! {{file_count}} files sent.\n")
 
 
 class ADBFileTransferGUI(QMainWindow):
@@ -88,7 +88,7 @@ class ADBFileTransferGUI(QMainWindow):
     def init_ui(self):
         """Initialize the user interface"""
         self.setWindowTitle("ADB File Transfer - Arch Linux")
-        self.setGeometry(100, 100, 900, 700)
+        self.setGeometry(100, 100, 1000, 750)
         
         # Apply stylesheet for better appearance
         self.apply_stylesheet()
@@ -100,23 +100,34 @@ class ADBFileTransferGUI(QMainWindow):
         main_layout.setSpacing(15)
         main_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Title
-        title = QLabel("ADB File Transfer")
+        # Title with gradient background
+        title_frame = QFrame()
+        title_frame.setObjectName("titleFrame")
+        title_layout = QVBoxLayout(title_frame)
+        title_layout.setContentsMargins(15, 15, 15, 15)
+        
+        title = QLabel("🚀 ADB File Transfer")
         title_font = QFont()
-        title_font.setPointSize(18)
+        title_font.setPointSize(22)
         title_font.setBold(True)
         title.setFont(title_font)
-        main_layout.addWidget(title)
+        title.setObjectName("title")
+        title_layout.addWidget(title)
+        
+        main_layout.addWidget(title_frame)
         
         # Device Selection Group
-        device_group = QGroupBox("Device Selection")
+        device_group = QGroupBox("📱 Device Selection")
+        device_group.setObjectName("deviceGroup")
         device_layout = QFormLayout()
         
         self.device_combo = QComboBox()
+        self.device_combo.setObjectName("deviceCombo")
         self.device_combo.addItem("Auto-detect")
         device_layout.addRow("Device:", self.device_combo)
         
-        refresh_btn = QPushButton("Refresh Devices")
+        refresh_btn = QPushButton("🔄 Refresh Devices")
+        refresh_btn.setObjectName("refreshBtn")
         refresh_btn.clicked.connect(self.refresh_devices)
         device_layout.addRow("", refresh_btn)
         
@@ -124,17 +135,21 @@ class ADBFileTransferGUI(QMainWindow):
         main_layout.addWidget(device_group)
         
         # File/Directory Selection Group
-        file_group = QGroupBox("File/Directory Selection")
+        file_group = QGroupBox("📁 File/Directory Selection")
+        file_group.setObjectName("fileGroup")
         file_layout = QFormLayout()
         
         self.path_input = QLineEdit()
+        self.path_input.setObjectName("pathInput")
         self.path_input.setPlaceholderText("Select a file or directory...")
         file_layout.addRow("Path:", self.path_input)
         
         file_browse_layout = QHBoxLayout()
-        file_btn = QPushButton("Browse File")
+        file_btn = QPushButton("📄 Browse File")
+        file_btn.setObjectName("fileBrowseBtn")
         file_btn.clicked.connect(self.browse_file)
-        dir_btn = QPushButton("Browse Directory")
+        dir_btn = QPushButton("📂 Browse Directory")
+        dir_btn.setObjectName("dirBrowseBtn")
         dir_btn.clicked.connect(self.browse_directory)
         file_browse_layout.addWidget(file_btn)
         file_browse_layout.addWidget(dir_btn)
@@ -144,26 +159,42 @@ class ADBFileTransferGUI(QMainWindow):
         main_layout.addWidget(file_group)
         
         # Transfer Group
-        transfer_group = QGroupBox("Transfer")
+        transfer_group = QGroupBox("⚡ Transfer")
+        transfer_group.setObjectName("transferGroup")
         transfer_layout = QVBoxLayout()
         
         self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("progressBar")
         self.progress_bar.setVisible(False)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid #FF6B6B;
+                border-radius: 8px;
+                background-color: #1a1a1a;
+                height: 25px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #FF6B6B, stop:0.5 #FFD93D, stop:1 #6BCB77);
+            }
+        """)
         transfer_layout.addWidget(self.progress_bar)
         
-        transfer_btn = QPushButton("Start Transfer")
+        transfer_btn = QPushButton("🚀 START TRANSFER")
+        transfer_btn.setObjectName("transferBtn")
         transfer_btn.clicked.connect(self.start_transfer)
-        transfer_btn.setStyleSheet("QPushButton { padding: 10px; font-size: 12px; font-weight: bold; }")
         transfer_layout.addWidget(transfer_btn)
         
         transfer_group.setLayout(transfer_layout)
         main_layout.addWidget(transfer_group)
         
         # Output/Logs Group
-        output_group = QGroupBox("Transfer Log")
+        output_group = QGroupBox("📋 Transfer Log")
+        output_group.setObjectName("outputGroup")
         output_layout = QVBoxLayout()
         
         self.output_text = QTextEdit()
+        self.output_text.setObjectName("outputText")
         self.output_text.setReadOnly(True)
         self.output_text.setFont(QFont("Monospace", 9))
         output_layout.addWidget(self.output_text)
@@ -178,55 +209,187 @@ class ADBFileTransferGUI(QMainWindow):
         self.refresh_devices()
     
     def apply_stylesheet(self):
-        """Apply custom stylesheet for Arch Linux aesthetic"""
+        """Apply custom stylesheet for vibrant, flashy appearance"""
         stylesheet = """
         QMainWindow {
-            background-color: #1e1e1e;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #0F0E17, stop:0.5 #1a0f2e, stop:1 #16213e);
             color: #ffffff;
         }
-        QGroupBox {
-            border: 1px solid #3a3a3a;
-            border-radius: 5px;
-            margin-top: 10px;
-            padding-top: 10px;
-            font-weight: bold;
+        
+        #titleFrame {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #FF006E, stop:0.5 #FFB703, stop:1 #FB5607);
+            border-radius: 10px;
+            border: 2px solid #FFD60A;
         }
+        
+        #title {
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        QGroupBox {
+            border: 2px solid #6A4C93;
+            border-radius: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #FFD60A;
+        }
+        
+        #deviceGroup {
+            border: 2px solid #1D7874;
+        }
+        
+        #fileGroup {
+            border: 2px solid #6A4C93;
+        }
+        
+        #transferGroup {
+            border: 2px solid #FF006E;
+        }
+        
+        #outputGroup {
+            border: 2px solid #FFB703;
+        }
+        
         QGroupBox::title {
             subcontrol-origin: margin;
             left: 10px;
-            padding: 0 3px 0 3px;
+            padding: 0 5px 0 5px;
         }
+        
         QPushButton {
-            background-color: #0184bc;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #FF006E, stop:0.5 #FF4B4B, stop:1 #FF006E);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #refreshBtn {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #1D7874, stop:0.5 #118B8B, stop:1 #1D7874);
+        }
+        
+        #fileBrowseBtn {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #6A4C93, stop:0.5 #8E7CC3, stop:1 #6A4C93);
+        }
+        
+        #dirBrowseBtn {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #FFB703, stop:0.5 #FFD60A, stop:1 #FFB703);
+            color: #000000;
+        }
+        
+        #transferBtn {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #FF006E, stop:0.5 #FB5607, stop:1 #FFBE0B);
+            color: white;
+            padding: 15px 30px;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px solid #FFD60A;
+            border-radius: 8px;
+        }
+        
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #FF4B4B, stop:0.5 #FFB703, stop:1 #FF4B4B);
+            border: 2px solid #FFFFFF;
+            box-shadow: 0 0 15px rgba(255, 0, 110, 0.8);
+        }
+        
+        QPushButton:pressed {
+            background: qlineargradient(x1:0, y1:1, x2:1, y2:0,
+                stop:0 #FF006E, stop:0.5 #FB5607, stop:1 #FFBE0B);
+            transform: scale(0.98);
+        }
+        
+        #refreshBtn:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #00D084, stop:0.5 #23D997, stop:1 #00D084);
+            box-shadow: 0 0 15px rgba(29, 120, 116, 0.8);
+        }
+        
+        #fileBrowseBtn:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #C77DFF, stop:0.5 #E0AAFF, stop:1 #C77DFF);
+            box-shadow: 0 0 15px rgba(106, 76, 147, 0.8);
+        }
+        
+        #dirBrowseBtn:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #FFD60A, stop:0.5 #FFC300, stop:1 #FFD60A);
+            box-shadow: 0 0 15px rgba(255, 183, 3, 0.8);
+        }
+        
+        QLineEdit, QTextEdit, QComboBox {
+            background-color: #1a1a1a;
+            color: #00D084;
+            border: 2px solid #00D084;
+            border-radius: 6px;
+            padding: 8px;
             font-weight: bold;
         }
-        QPushButton:hover {
-            background-color: #016a8f;
+        
+        QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
+            background-color: #0F0E17;
+            border: 2px solid #FFD60A;
+            color: #FFD60A;
+            box-shadow: 0 0 10px rgba(255, 214, 10, 0.5);
         }
-        QPushButton:pressed {
-            background-color: #014d68;
+        
+        QLineEdit::placeholder {
+            color: #666666;
         }
-        QLineEdit, QTextEdit, QComboBox {
-            background-color: #2a2a2a;
-            color: #ffffff;
-            border: 1px solid #3a3a3a;
-            border-radius: 4px;
-            padding: 5px;
-        }
+        
         QLabel {
-            color: #ffffff;
+            color: #E0AAFF;
+            font-weight: bold;
         }
+        
         QProgressBar {
-            border: 1px solid #3a3a3a;
-            border-radius: 4px;
+            border: 2px solid #FF6B6B;
+            border-radius: 8px;
+            background-color: #1a1a1a;
+            height: 25px;
             text-align: center;
+            color: #FFD60A;
+            font-weight: bold;
         }
+        
         QProgressBar::chunk {
-            background-color: #0184bc;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #FF6B6B, stop:0.5 #FFD93D, stop:1 #6BCB77);
+            border-radius: 6px;
+        }
+        
+        QComboBox::drop-down {
+            border: none;
+            width: 20px;
+        }
+        
+        QComboBox::down-arrow {
+            image: none;
+            background-color: #00D084;
+            border-radius: 3px;
+        }
+        
+        QStatusBar {
+            background-color: #0F0E17;
+            color: #FFD60A;
+            border-top: 2px solid #00D084;
+            font-weight: bold;
         }
         """
         self.setStyleSheet(stylesheet)
@@ -253,17 +416,17 @@ class ADBFileTransferGUI(QMainWindow):
             
             if devices:
                 self.device_combo.addItems(devices)
-                self.statusBar().showMessage(f"Found {len(devices)} device(s)")
+                self.statusBar().showMessage(f"✓ Found {{len(devices)}} device(s)")
             else:
-                self.statusBar().showMessage("No devices found")
+                self.statusBar().showMessage("⚠ No devices found")
                 self.log_output("⚠ No ADB devices detected. Make sure ADB is installed and a device is connected.")
         
         except FileNotFoundError:
             self.log_output("✗ Error: ADB not found. Please install android-tools.")
-            self.statusBar().showMessage("ADB not found")
+            self.statusBar().showMessage("✗ ADB not found")
         except Exception as e:
-            self.log_output(f"✗ Error refreshing devices: {str(e)}")
-            self.statusBar().showMessage("Error refreshing devices")
+            self.log_output(f"✗ Error refreshing devices: {{str(e)}}")
+            self.statusBar().showMessage("✗ Error refreshing devices")
     
     def browse_file(self):
         """Open file browser dialog"""
@@ -302,8 +465,8 @@ class ADBFileTransferGUI(QMainWindow):
             device_id = "default"
         
         self.output_text.clear()
-        self.log_output(f"Starting transfer...\n")
-        self.statusBar().showMessage("Transferring...")
+        self.log_output(f"🚀 Starting transfer...\n")
+        self.statusBar().showMessage("⚡ Transferring...")
         
         # Create and start worker thread
         self.worker = TransferWorker(path, device_id)
@@ -325,13 +488,13 @@ class ADBFileTransferGUI(QMainWindow):
     
     def handle_error(self, error_message):
         """Handle transfer errors"""
-        self.statusBar().showMessage("Transfer failed")
-        self.log_output(f"\n✗ Error: {error_message}\n")
+        self.statusBar().showMessage("✗ Transfer failed")
+        self.log_output(f"\n✗ Error: {{error_message}}\n")
         QMessageBox.critical(self, "Transfer Error", error_message)
     
     def transfer_complete(self):
         """Handle transfer completion"""
-        self.statusBar().showMessage("Transfer complete!")
+        self.statusBar().showMessage("✓ Transfer complete!")
         if self.transfer_thread:
             self.transfer_thread.quit()
             self.transfer_thread.wait()
