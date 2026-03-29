@@ -21,3 +21,6 @@ adb shell /data/app/moe.shizuku.privileged.api-cNUao8RVv9fs0MSDb6IE7g==/lib/arm6
 
 # run in c++
 ./adb_file_transfer /home/jay/Downloads/base.apk R5CY54XQM4R
+
+# how to write the output of a ls command into a txt file
+adb shell ls > download-list.txt /storage/self/primary/Download/
